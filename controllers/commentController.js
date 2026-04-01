@@ -42,7 +42,8 @@ exports.getComments = async (req, res) => {
   try {
     const postId = req.params.postId;
     const comments = await Comment.find({ post: postId })
-      .populate('author', 'firstName lastName _id')
+      .populate('author', 'firstName lastName _id avatar')
+      .populate('likes', 'firstName lastName _id avatar')
       .sort({ createdAt: 1 }); // Oldest first for comments usually
 
     res.json(comments);
@@ -70,6 +71,7 @@ exports.likeUnlikeComment = async (req, res) => {
     }
 
     await comment.save();
+    await comment.populate('likes', 'firstName lastName _id avatar');
     res.json(comment.likes);
   } catch (err) {
     console.error(err);

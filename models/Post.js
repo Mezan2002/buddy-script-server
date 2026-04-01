@@ -15,6 +15,9 @@ const postSchema = new mongoose.Schema({
     type: String, // Cloudinary URL
     default: null
   },
+  images: [{
+    type: String, // Array of Cloudinary URLs
+  }],
   visibility: {
     type: String,
     enum: ['public', 'private'],
