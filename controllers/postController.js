@@ -4,15 +4,12 @@ const Comment = require("../models/Comment");
 exports.createPost = async (req, res) => {
   try {
     const { content, visibility } = req.body;
-    let imageUrl = null;
     let imagesUrls = [];
 
     if (req.files && req.files.length > 0) {
       imagesUrls = req.files.map((file) => file.path);
-      imageUrl = imagesUrls[0]; // fallback for legacy clients
     } else if (req.file) {
-      imageUrl = req.file.path;
-      imagesUrls = [imageUrl];
+      imagesUrls = [req.file.path];
     }
 
     if (!content && imagesUrls.length === 0) {
@@ -21,13 +18,13 @@ exports.createPost = async (req, res) => {
         .json({ message: "Post must contain text or an image" });
     }
 
-    // Validate visibility
-    const finalVisibility = ["public", "private"].includes(visibility) ? visibility : "public";
+    const finalVisibility = ["public", "private"].includes(visibility)
+      ? visibility
+      : "public";
 
     const newPost = new Post({
       author: req.user.id,
       content: content || "",
-      image: imageUrl,
       images: imagesUrls,
       visibility: finalVisibility,
     });
@@ -117,28 +114,30 @@ exports.updatePost = async (req, res) => {
     }
 
     if (post.author.toString() !== req.user.id) {
-      return res.status(401).json({ message: "User not authorized to edit this post" });
+      return res
+        .status(401)
+        .json({ message: "User not authorized to edit this post" });
     }
 
     const { content, visibility, removeExistingImages } = req.body;
-    
+
     if (content !== undefined) post.content = content;
-    if (visibility !== undefined && ["public", "private"].includes(visibility)) {
+    if (
+      visibility !== undefined &&
+      ["public", "private"].includes(visibility)
+    ) {
       post.visibility = visibility;
     }
 
-    if (removeExistingImages === 'true') {
+    if (removeExistingImages === "true") {
       post.images = [];
-      post.image = null;
     }
 
     if (req.files && req.files.length > 0) {
       const newImagesUrls = req.files.map((file) => file.path);
       post.images = [...post.images, ...newImagesUrls];
-      post.image = post.images[0]; 
     } else if (req.file) {
       post.images = [...post.images, req.file.path];
-      post.image = post.images[0];
     }
 
     await post.save();
@@ -147,7 +146,7 @@ exports.updatePost = async (req, res) => {
     res.json(post);
   } catch (err) {
     console.error(err);
-    if (err.kind === 'ObjectId') {
+    if (err.kind === "ObjectId") {
       return res.status(404).json({ message: "Post not found" });
     }
     res.status(500).send("Server Error");
@@ -162,7 +161,9 @@ exports.deletePost = async (req, res) => {
     }
 
     if (post.author.toString() !== req.user.id) {
-      return res.status(401).json({ message: "User not authorized to delete this post" });
+      return res
+        .status(401)
+        .json({ message: "User not authorized to delete this post" });
     }
 
     await Comment.deleteMany({ post: post._id });
@@ -171,7 +172,7 @@ exports.deletePost = async (req, res) => {
     res.json({ message: "Post removed" });
   } catch (err) {
     console.error(err);
-    if (err.kind === 'ObjectId') {
+    if (err.kind === "ObjectId") {
       return res.status(404).json({ message: "Post not found" });
     }
     res.status(500).send("Server Error");

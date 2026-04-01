@@ -1,5 +1,5 @@
-const Comment = require('../models/Comment');
-const Post = require('../models/Post');
+const Comment = require("../models/Comment");
+const Post = require("../models/Post");
 
 exports.addComment = async (req, res) => {
   try {
@@ -7,12 +7,12 @@ exports.addComment = async (req, res) => {
     const postId = req.params.postId;
 
     if (!content) {
-      return res.status(400).json({ message: 'Comment content is required' });
+      return res.status(400).json({ message: "Comment content is required" });
     }
 
     const post = await Post.findById(postId);
     if (!post) {
-      return res.status(404).json({ message: 'Post not found' });
+      return res.status(404).json({ message: "Post not found" });
     }
 
     const newComment = new Comment({
@@ -20,21 +20,20 @@ exports.addComment = async (req, res) => {
       post: postId,
       content,
       isReply: !!parentCommentId,
-      parentComment: parentCommentId || null
+      parentComment: parentCommentId || null,
     });
 
     const comment = await newComment.save();
-    
-    // Update post comment count
+
     post.commentsCount += 1;
     await post.save();
 
-    await comment.populate('author', 'firstName lastName _id');
+    await comment.populate("author", "firstName lastName _id");
 
     res.status(201).json(comment);
   } catch (err) {
     console.error(err);
-    res.status(500).send('Server Error');
+    res.status(500).send("Server Error");
   }
 };
 
@@ -42,14 +41,14 @@ exports.getComments = async (req, res) => {
   try {
     const postId = req.params.postId;
     const comments = await Comment.find({ post: postId })
-      .populate('author', 'firstName lastName _id avatar')
-      .populate('likes', 'firstName lastName _id avatar')
-      .sort({ createdAt: 1 }); // Oldest first for comments usually
+      .populate("author", "firstName lastName _id avatar")
+      .populate("likes", "firstName lastName _id avatar")
+      .sort({ createdAt: 1 });
 
     res.json(comments);
   } catch (err) {
     console.error(err);
-    res.status(500).send('Server Error');
+    res.status(500).send("Server Error");
   }
 };
 
@@ -58,7 +57,7 @@ exports.likeUnlikeComment = async (req, res) => {
     const comment = await Comment.findById(req.params.id);
 
     if (!comment) {
-      return res.status(404).json({ message: 'Comment not found' });
+      return res.status(404).json({ message: "Comment not found" });
     }
 
     const userId = req.user.id;
@@ -71,10 +70,10 @@ exports.likeUnlikeComment = async (req, res) => {
     }
 
     await comment.save();
-    await comment.populate('likes', 'firstName lastName _id avatar');
+    await comment.populate("likes", "firstName lastName _id avatar");
     res.json(comment.likes);
   } catch (err) {
     console.error(err);
-    res.status(500).send('Server Error');
+    res.status(500).send("Server Error");
   }
 };
