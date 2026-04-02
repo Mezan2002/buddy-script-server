@@ -12,10 +12,6 @@ const postSchema = new mongoose.Schema(
       trim: true,
       default: "",
     },
-    image: {
-      type: String,
-      default: null,
-    },
     images: [
       {
         type: String,
@@ -39,5 +35,9 @@ const postSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+// Indexes for performance at scale
+postSchema.index({ visibility: 1, createdAt: -1 });
+postSchema.index({ author: 1, createdAt: -1 });
 
 module.exports = mongoose.model("Post", postSchema);

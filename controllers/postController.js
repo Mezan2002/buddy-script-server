@@ -1,8 +1,14 @@
 const Post = require("../models/Post");
 const Comment = require("../models/Comment");
+const { validationResult } = require('express-validator');
 
 exports.createPost = async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
     const { content, visibility } = req.body;
     let imagesUrls = [];
 
@@ -10,12 +16,6 @@ exports.createPost = async (req, res) => {
       imagesUrls = req.files.map((file) => file.path);
     } else if (req.file) {
       imagesUrls = [req.file.path];
-    }
-
-    if (!content && imagesUrls.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "Post must contain text or an image" });
     }
 
     const finalVisibility = ["public", "private"].includes(visibility)
@@ -108,6 +108,11 @@ exports.likeUnlikePost = async (req, res) => {
 
 exports.updatePost = async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
     const post = await Post.findById(req.params.id);
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
