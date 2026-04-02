@@ -19,6 +19,11 @@ app.use('/api/comments', require('./routes/commentRoutes'));
 
 app.get('/', (req, res) => res.send('API Running'));
 
+// Export app for Vercel
+module.exports = app;
+
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+}
